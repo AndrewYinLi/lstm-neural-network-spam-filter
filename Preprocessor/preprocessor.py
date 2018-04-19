@@ -6,7 +6,7 @@ def main():
 
 	# Necessary precaution to create a list of files to parse as we will be creating new textfiles and don't want to parse those
 	parseFiles = [] # List of files to parse
-	for fileName in glob.glob('./original/ham/*'): # glob textfiles
+	for fileName in glob.glob('*.txt'): # glob textfiles
 		parseFiles.append(fileName) # Add to list
 
 	# For each file in the list we just aggregated
@@ -20,8 +20,8 @@ def main():
 				allStems.append(stems) # Add to list of stems
 		file.close()
 
-		newFileName = 'H_stemmed_' + fileName[16:] # Concatenate new file name
-		file = open("./original/stemmed/"+newFileName,'w') 
+		newFileName = 'stemmed_' + fileName # Concatenate new file name
+		file = open(newFileName,'w') 
 
 		for stems in allStems:
 			stemLine = '' # WIll concatenate all stems for a line into this string
