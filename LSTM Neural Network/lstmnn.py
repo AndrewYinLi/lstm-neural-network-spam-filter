@@ -1,6 +1,6 @@
 ###############################
 # rnn.py
-# Joshua Rappaport
+# Joshua Rappaport, Andrew Li, Ben McGarvey
 #
 # Certain bits of code taken from https://machinelearningmastery.com/sequence-classification-lstm-recurrent-neural-networks-python-keras/
 ###############################
