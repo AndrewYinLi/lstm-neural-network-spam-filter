@@ -21,7 +21,7 @@ def splitSets(targetDirectory, trainingPercentage, seed):
 	allFiles = []
 	for fileName in glob.glob('*.txt'): # glob textfiles
 		fileNameSplit = fileName.split('_')
-		if fileNameSplit[2] == 'stemmed': # Only add stemmed files | FOR DEBUG set index to 2, else set to 1
+		if fileNameSplit[1] == 'stemmed': # Only add stemmed files | FOR DEBUG set index to 2, else set to 1
 			allFiles.append(fileName)
 
 	random.seed(seed)
@@ -32,11 +32,11 @@ def splitSets(targetDirectory, trainingPercentage, seed):
 
 
 	# FOR DEBUG: Comment out block
-	#for fileName in glob.glob('*.txt'):
-	#	if fileName in train:
-	#		os.rename(fileName, ('train_'+fileName))
-	#	elif fileName in test:
-	#		os.rename(fileName, ('test_'+fileName))
+	for fileName in glob.glob('*.txt'):
+		if fileName in train:
+			os.rename(fileName, ('train_'+fileName))
+		elif fileName in test:
+			os.rename(fileName, ('test_'+fileName))
 
 	os.chdir(originalDirectory) # Go back to original directory
 
@@ -85,17 +85,8 @@ def getWordCounterVectorMatrix(targetDirectory, keyword, numEmails, vocabulary):
 					if vocab[0] == emailVocab:
 						wordIndex = i
 						WCVMatrix[emailIndex, wordIndex] = emailVocabulary.count(emailVocab)
-			#for i, line in enumerate (emailFile):
-			#	words = line.split()
-			#	for word in words:
-			#		wordIndex = 0
-			#		for i, vocab in enumerate(vocabulary):
-			#			if vocab[0] == word:
-			#				wordIndex = i
-			#				WCVMatrix[emailIndex, wordIndex] = words.count(word)
 			emailFile.close()
 			if fileNameSplit[1] == "ham":
-				print("nice")
 				labels[emailIndex] = 1
 			emailIndex += 1
 	os.chdir(originalDirectory) # Go back to original directory
