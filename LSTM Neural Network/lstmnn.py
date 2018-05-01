@@ -1,17 +1,23 @@
+###############################
+# rnn.py
 # Joshua Rappaport
+#
 # Certain bits of code taken from https://machinelearningmastery.com/sequence-classification-lstm-recurrent-neural-networks-python-keras/
+###############################
 
 import pickle
 import numpy
 import glob
 import copy
 import random
+import sys
 from keras.preprocessing.text import Tokenizer
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
+from keras.models import model_from_yaml
 
 from keras.datasets import imdb
 
@@ -59,20 +65,37 @@ def makeSets(tokenizer, S, H):
     H_len = len(H_tokenized)
     S_train_len = int(S_len*3/4)
     H_train_len = int(H_len*3/4)
-    S_test_len = S_len - S_train_len - 1
-    H_test_len = H_len - H_train_len - 1
+    S_test_len = S_len - S_train_len
+    H_test_len = H_len - H_train_len
     
     X_train = copy.deepcopy(S_tokenized[0:S_train_len]) + \
               copy.deepcopy(H_tokenized[0:H_train_len])
     Y_train = ([0]*S_train_len)+([1]*H_train_len)
-    X_test = copy.deepcopy(S_tokenized[S_train_len+1:]) + \
-             copy.deepcopy(H_tokenized[H_train_len+1:])
+    X_test = copy.deepcopy(S_tokenized[S_train_len:]) + \
+             copy.deepcopy(H_tokenized[H_train_len:])
     Y_test = ([0]*S_test_len)+([1]*H_test_len)
 
     shffl(X_train, Y_train)
-    shffl(X_test, Y_test)
+    #shffl(X_test, Y_test)
     
     return (X_train, Y_train), (X_test, Y_test)
+
+def save(model):
+    model_yaml = model.to_yaml()
+    with open("model.yaml", "w") as yaml_file:
+        yaml_file.write(model_yaml)
+    model.save_weights("model.h5")
+    print("Saved the model to model.yaml and model.h5!")
+
+def load():
+    yaml_file = open("model.yaml", "r")
+    loaded_model_yaml = yaml_file.read()
+    yaml_file.close()
+    model = model_from_yaml(loaded_model_yaml)
+    model.load_weights("model.h5")
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    print("Loaded model from model.yaml and model.h5!")
+    return model
 
 def main():
     #load up the tokenizer and the non-tokenized files
@@ -84,7 +107,7 @@ def main():
         H = pickle.load(handle)
         
     #Set some parameters
-    vocab_length = len(tokenizer.word_index)
+    vocab_length = len(tokenizer.word_index)+1
     max_email_length = 1500
 
     #make the input
@@ -92,16 +115,26 @@ def main():
     X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)
     X_test = sequence.pad_sequences(X_test, maxlen=max_email_length)
 
+    print(vocab_length)
+
     #make the model
-    model = makeModel(vocab_length, max_email_length)
+    if (sys.argv[1] == '1'):
+        model = load()
+    else:
+        model = makeModel(vocab_length, max_email_length)
+
+    assert len(X_test) == len(Y_test)
 
     #DO THE THING!!!!
     print(model.summary())
-    model.fit(X_train, Y_train, epochs=3, batch_size=64)
+    model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
-    #Test the thing and show results! NOT DONE YET
-    #scores = model.evaluate(X_test, Y_test, verbose=0)
-    #print("Accuracy: %.2f%%" % (scores[1]*100))
+    #Test the thing and show results!
+    scores = model.evaluate(X_test, Y_test)
+    print("Accuracy: %.2f%%" % (scores[1]*100))
+
+    #Save the model!
+    save(model)
 
 main()
     
