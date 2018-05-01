@@ -1,9 +1,5 @@
-###############################
-# rnn.py
-# Joshua Rappaport, Andrew Li, Ben McGarvey
-#
+# Joshua Rappaport
 # Certain bits of code taken from https://machinelearningmastery.com/sequence-classification-lstm-recurrent-neural-networks-python-keras/
-###############################
 
 import pickle
 import numpy

@@ -1,8 +1,12 @@
+# Andrew Yin Li | www.andrewyinli.com
+# Use: Pass target directory as an argument
+
 import StemmingUtil
 import glob
 import fileinput
 import sys
 import os
+import re
 
 def main():
 
@@ -16,23 +20,27 @@ def main():
 
 	os.chdir(originalDirectory) # Go back to original directory
 
-	stemmedDirectory = "stemmed"
+	stemmedDirectory = 'stemmed'
 	if not os.path.exists(stemmedDirectory): # Make a directory called stemmed if one doesn't exist
 		os.makedirs(stemmedDirectory)
+
+
+	regex = re.compile('[^0-9a-zA-Z]') # Regex of what we want
 
 	# For each file in the list we just aggregated
 	for fileName in parseFiles:
 		allStems = [] # Array of arrays to keep track of list of stems for each line
-		file = open(os.path.join(sys.argv[1], fileName), "r")
-		for line in file:
+		emailFile = open(os.path.join(sys.argv[1], fileName), 'r', encoding="utf8", errors='ignore')
+		for line in emailFile:
 			if not line.isspace(): # Get rid of white space
-				words = StemmingUtil.parseTokens(line.lower()) # Parse into tokens
+
+				words = StemmingUtil.parseTokens(re.sub('[^0-9A-Za-z ]+', '', line.lower())) # Parse into tokens
 				stems = StemmingUtil.createStems(words) # Create stems
 				allStems.append(stems) # Add to list of stems
-		file.close()
+		emailFile.close()
 
 		newFileName = sys.argv[1] + '_stemmed_' + fileName # Concatenate new file name
-		file = open(os.path.join(stemmedDirectory, newFileName),'w') 
+		emailFile = open(os.path.join(stemmedDirectory, newFileName),'w', encoding="utf8", errors='ignore') 
 
 		for stems in allStems:
 			stemLine = '' # WIll concatenate all stems for a line into this string
@@ -41,9 +49,9 @@ def main():
 					stemLine += ' '
 				stemLine += stem # Append by default
 			stemLine += '\n'
-			file.write(stemLine)
+			emailFile.write(stemLine)
 
-		file.close()
+		emailFile.close()
 				
 if  __name__ =='__main__':
     main()
