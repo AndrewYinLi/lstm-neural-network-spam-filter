@@ -11,6 +11,7 @@ import glob
 import copy
 import random
 import sys
+import os
 from keras.preprocessing.text import Tokenizer
 from keras.models import Sequential
 from keras.layers import Dense
@@ -87,6 +88,19 @@ def save(model):
     model.save_weights("model.h5")
     print("Saved the model to model.yaml and model.h5!")
 
+def save2(model, ind):
+    originalDir = os.getcwd()
+    os.chdir(originalDir+'/saved')
+
+    model_yaml = model.to_yaml()
+    with open('model'+str(ind)+'.yaml', "w") as yaml_file:
+        yaml_file.write(model_yaml)
+    model.save_weights('model'+str(ind)+'.h5')
+    print('Saved the model to model'+str(ind)+'.yaml and model'+str(ind)+'.h5!')
+    
+    originalDir = os.getcwd()
+    os.chdir(originalDir)
+
 def load():
     yaml_file = open("model.yaml", "r")
     loaded_model_yaml = yaml_file.read()
@@ -96,6 +110,20 @@ def load():
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     print("Loaded model from model.yaml and model.h5!")
     return model
+
+def runForever(model, X_train, Y_train, X_test, Y_test):
+    index = 12
+    while(True):
+        model.fit(X_train, Y_train, epochs=3, batch_size=32)
+
+        #Test the thing and show results!
+        scores = model.evaluate(X_test, Y_test)
+        print("Accuracy: %.2f%%" % (scores[1]*100))
+
+        #Save the model!
+        save2(model, index)
+        index = index+3
+    
 
 def main():
     #load up the tokenizer and the non-tokenized files
@@ -125,13 +153,16 @@ def main():
 
     assert len(X_test) == len(Y_test)
 
+    
+
     #DO THE THING!!!!
     print(model.summary())
-    model.fit(X_train, Y_train, epochs=3, batch_size=32)
+    runForever(model, X_train, Y_train, X_test, Y_test)
+    #model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
     #Test the thing and show results!
-    scores = model.evaluate(X_test, Y_test)
-    print("Accuracy: %.2f%%" % (scores[1]*100))
+    #scores = model.evaluate(X_test, Y_test)
+    #print("Accuracy: %.2f%%" % (scores[1]*100))
 
     #Save the model!
     save(model)
