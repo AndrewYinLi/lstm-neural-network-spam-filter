@@ -64,6 +64,7 @@ def makeSets(tokenizer, S, H):
 
     S_len = len(S_tokenized)
     H_len = len(H_tokenized)
+    print (str(S_len)+','+str(H_len))
     S_train_len = int(S_len*3/4)
     H_train_len = int(H_len*3/4)
     S_test_len = S_len - S_train_len
@@ -98,7 +99,7 @@ def save2(model, ind):
     model.save_weights('model'+str(ind)+'.h5')
     print('Saved the model to model'+str(ind)+'.yaml and model'+str(ind)+'.h5!')
     
-    originalDir = os.getcwd()
+    #originalDir = os.getcwd()
     os.chdir(originalDir)
 
 def load():
@@ -112,7 +113,7 @@ def load():
     return model
 
 def runForever(model, X_train, Y_train, X_test, Y_test):
-    index = 12
+    index = 3
     while(True):
         model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
@@ -137,7 +138,6 @@ def main():
     #Set some parameters
     vocab_length = len(tokenizer.word_index)+1
     max_email_length = 1500
-
     #make the input
     (X_train, Y_train), (X_test, Y_test) = makeSets(tokenizer, S, H)
     X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)

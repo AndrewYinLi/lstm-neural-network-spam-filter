@@ -6,20 +6,20 @@ from keras.preprocessing.text import Tokenizer
 from keras.datasets import imdb
 import pickle
 
-def getFiles(inp, val):
-	
+def getFiles(inpL, val):
 	originalDir = os.getcwd()
 	os.chdir(originalDir+'/stemmed')
 	tokenFiles = [] # List of files to parse
 	realFileNames = []
 	openFiles = []
-	for fileName in glob.glob(inp+"*"): # glob textfiles
-		tokenFiles.append(fileName) # Add to list
-		realFileNames.append(fileName[8:]) # Add real name to list
-	for i in range(500):
-		file = open(tokenFiles[i])
-		openFiles.append(file.read())
-		file.close()
+	for inp in inpL:
+		for fileName in glob.glob(inp+"*"): # glob textfiles
+			tokenFiles.append(fileName) # Add to list
+			realFileNames.append(fileName[8:]) # Add real name to list
+		for i in tokenFiles:
+			file = open(i)
+			openFiles.append(file.read())
+			file.close()
 	os.chdir(originalDir)
 	with open(val+'_files.pickle', 'wb') as handle:
 		pickle.dump(openFiles, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -67,9 +67,11 @@ def getTokenizer():
 def main():
 	
 	hams = sys.argv[1]
-	spams = sys.argv[2]
+	hams2 = sys.argv[2]
+	spams = sys.argv[3]
 	tokenize()
-	
+
+	hams = [hams, hams2]
 	getFiles(spams, 'S')
 	getFiles(hams, 'H')
 	#(X_train, y_train), (X_test, y_test) = imdb.load_data()
