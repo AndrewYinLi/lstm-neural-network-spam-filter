@@ -13,6 +13,7 @@ def getFiles(inpL, val):
 	realFileNames = []
 	openFiles = []
 	for inp in inpL:
+		tokenFiles = [] 
 		for fileName in glob.glob(inp+"*"): # glob textfiles
 			tokenFiles.append(fileName) # Add to list
 			realFileNames.append(fileName[8:]) # Add real name to list
@@ -20,7 +21,9 @@ def getFiles(inpL, val):
 			file = open(i)
 			openFiles.append(file.read())
 			file.close()
+		print(len(openFiles))
 	os.chdir(originalDir)
+	
 	with open(val+'_files.pickle', 'wb') as handle:
 		pickle.dump(openFiles, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	return openFiles
@@ -37,8 +40,8 @@ def tokenize():
     
 	for fileName in tokenFiles:
 		counter+=1;
-		if counter%100 == 0:
-			print(str(counter))
+		#if counter%100 == 0:
+			#print(str(counter))
 		file = open(fileName)
 		openFiles.append(file.read())
 		file.close()
@@ -69,11 +72,12 @@ def main():
 	hams = sys.argv[1]
 	hams2 = sys.argv[2]
 	spams = sys.argv[3]
-	tokenize()
-
-	hams = [hams, hams2]
+	#tokenize()
+	
+	spams = [spams]
+	hams3 = [hams, hams2]
 	getFiles(spams, 'S')
-	getFiles(hams, 'H')
+	getFiles(hams3, 'H')
 	#(X_train, y_train), (X_test, y_test) = imdb.load_data()
 	#print(X_train)
 
