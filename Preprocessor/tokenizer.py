@@ -16,8 +16,8 @@ def getFiles(inp, val):
 	for fileName in glob.glob(inp+"*"): # glob textfiles
 		tokenFiles.append(fileName) # Add to list
 		realFileNames.append(fileName[8:]) # Add real name to list
-	for i in range(500):
-		file = open(tokenFiles[i])
+	for i in tokenFiles:
+		file = open(i)
 		openFiles.append(file.read())
 		file.close()
 	os.chdir(originalDir)
