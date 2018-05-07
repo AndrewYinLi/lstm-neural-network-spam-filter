@@ -24,6 +24,10 @@ from keras.datasets import imdb
 
 random.seed(42) #set the same random seed to reproducing results
 
+def shffl1(x):
+    state = random.getstate()
+    random.shuffle(x)
+
 def shffl(x,y):
     assert len(x) == len(y)
     state = random.getstate()
@@ -69,6 +73,9 @@ def makeSets(tokenizer, S, H):
     H_train_len = int(H_len*3/4)
     S_test_len = S_len - S_train_len
     H_test_len = H_len - H_train_len
+
+    shffl1(S_tokenized)
+    shffl1(H_tokenized)
     
     X_train = copy.deepcopy(S_tokenized[0:S_train_len]) + \
               copy.deepcopy(H_tokenized[0:H_train_len])
@@ -77,7 +84,7 @@ def makeSets(tokenizer, S, H):
              copy.deepcopy(H_tokenized[H_train_len:])
     Y_test = ([0]*S_test_len)+([1]*H_test_len)
 
-    shffl(X_train, Y_train)
+    #shffl(X_train, Y_train)
     #shffl(X_test, Y_test)
     
     return (X_train, Y_train), (X_test, Y_test)
@@ -112,9 +119,15 @@ def load():
     print("Loaded model from model.yaml and model.h5!")
     return model
 
-def runForever(model, X_train, Y_train, X_test, Y_test):
+def runForever(model, tokenizer, S, H):
     index = 3
+    vocab_length = len(tokenizer.word_index)+1
+    max_email_length = 1500
     while(True):
+        (X_train, Y_train), (X_test, Y_test) = makeSets(tokenizer, S, H)
+        X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)
+        X_test = sequence.pad_sequences(X_test, maxlen=max_email_length)
+        
         model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
         #Test the thing and show results!
@@ -124,7 +137,7 @@ def runForever(model, X_train, Y_train, X_test, Y_test):
         #Save the model!
         save2(model, index)
         index = index+3
-    
+        
 
 def main():
     #load up the tokenizer and the non-tokenized files
@@ -136,12 +149,12 @@ def main():
         H = pickle.load(handle)
         
     #Set some parameters
-    vocab_length = len(tokenizer.word_index)+1
-    max_email_length = 1500
+    
+    
+    
+    
     #make the input
-    (X_train, Y_train), (X_test, Y_test) = makeSets(tokenizer, S, H)
-    X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)
-    X_test = sequence.pad_sequences(X_test, maxlen=max_email_length)
+    
 
     print(vocab_length)
 
@@ -150,14 +163,13 @@ def main():
         model = load()
     else:
         model = makeModel(vocab_length, max_email_length)
-
-    assert len(X_test) == len(Y_test)
-
+    print(model.summary())
+    runForever(model, tokenizer, S, H)
     
 
     #DO THE THING!!!!
-    print(model.summary())
-    runForever(model, X_train, Y_train, X_test, Y_test)
+    
+
     #model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
     #Test the thing and show results!
