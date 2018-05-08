@@ -6,6 +6,7 @@ import fileinput
 import sys
 import os
 import numpy as np
+import time
 import random
 
 from collections import Counter
@@ -42,24 +43,12 @@ def splitSets(targetDirectory, trainingPercentage, seed):
 
 	return len(train), len(test)
 
-
-def getVocabulary(targetDirectory):
-
-	originalDirectory = os.getcwd() # Store current directory
-	os.chdir(originalDirectory + '/' + targetDirectory) # Change to target directory
-
+def getVocabulary(targetFile):
+	textFile = open(targetFile, 'r', encoding="utf8", errors='ignore')
 	vocabulary = []
-	for fileName in glob.glob('*.txt'): # glob textfiles
-		fileNameSplit = fileName.split('_')
-		if fileNameSplit[0] == 'train' and fileNameSplit[2] == 'stemmed': # Only add stemmed files
-			emailFile = open(fileName, 'r', encoding="utf8", errors='ignore')
-			for line in emailFile: # Add every word on each line in the file to our vocabulary
-				vocabulary += line.split()
-			emailFile.close()
-	vocabulary = Counter(vocabulary) # Use built-in Python function to count occurrence of each word in doctionary format where word = key and occurrences = value
-	vocabulary = vocabulary.most_common(2000)
-	os.chdir(originalDirectory) # Go back to original directory
-	print(vocabulary)
+	for line in textFile:
+		vocabulary += line.split()
+	textFile.close()
 	return vocabulary
 
 
@@ -74,18 +63,13 @@ def getWordCounterVectorMatrix(targetDirectory, keyword, numEmails, vocabulary):
 	for fileName in tqdm(glob.glob('*.txt')): # glob textfiles
 		fileNameSplit = fileName.split('_')
 		if fileNameSplit[0] == keyword and fileNameSplit[2] == 'stemmed': # Only add stemmed files
-			emailFile = open(fileName, 'r', encoding="utf8", errors='ignore')
-			emailVocabulary = []
-			for line in emailFile:
-				lineSplit = line.split()
-				emailVocabulary += lineSplit
+			emailVocabulary = getVocabulary(fileName)
 			for emailVocab in emailVocabulary:
-				wordIndex = 0;
-				for i, vocab in enumerate(vocabulary):
+				matrixIndex = 0
+				for vocab in vocabulary:
 					if vocab[0] == emailVocab:
-						wordIndex = i
-						WCVMatrix[emailIndex, wordIndex] = emailVocabulary.count(emailVocab)
-			emailFile.close()
+						WCVMatrix[emailIndex, matrixIndex] = emailVocabulary.count(emailVocab)
+					matrixIndex += 1
 			if fileNameSplit[1] == "ham":
 				labels[emailIndex] = 1
 			emailIndex += 1
@@ -95,20 +79,35 @@ def getWordCounterVectorMatrix(targetDirectory, keyword, numEmails, vocabulary):
 
 
 def main():
+	timeStart = time.time() # Initial time
 
 	targetDirectory = sys.argv[1]
 	trainingPercentage = eval(sys.argv[2])
 	seed = eval(sys.argv[3])
 
 	trainLength, testLength = splitSets(targetDirectory, trainingPercentage, seed)
-	vocabulary = getVocabulary(targetDirectory)
+
+	# Generate vocabulary
+	originalDirectory = os.getcwd() # Store current directory
+	os.chdir(originalDirectory + '/' + targetDirectory) # Change to target directory
+
+	vocabulary = []
+	for fileName in glob.glob('*.txt'): # glob textfiles
+		fileNameSplit = fileName.split('_')
+		if fileNameSplit[0] == 'train' and fileNameSplit[2] == 'stemmed': # Only add stemmed files
+			emailVocabulary = getVocabulary(fileName)
+			#for emailVocab in emailVocabulary:
+			vocabulary += emailVocabulary
+	vocabulary = Counter(vocabulary).most_common(2000) # Use built-in Python function to count occurrence of each word in dictionary format where word = key and occurrences = value and then take the 2000 greatest
+	os.chdir(originalDirectory) # Go back to original directory
 	
-	trainWCVMatrix, trainLabels = getWordCounterVectorMatrix(targetDirectory, 'train', trainLength, vocabulary)
 	naiveBayes = MultinomialNB()
+	trainWCVMatrix, trainLabels = getWordCounterVectorMatrix(targetDirectory, 'train', trainLength, vocabulary)
 	naiveBayes.fit(trainWCVMatrix, trainLabels)
 	testWCVMatrix, testLabels = getWordCounterVectorMatrix(targetDirectory, 'test', testLength, vocabulary)
 	result = naiveBayes.predict(testWCVMatrix)
 	print(confusion_matrix(testLabels, result))
+	print("Time elapsed: "+str(time.time() - timeStart))
 
 if  __name__ =='__main__':
 	main()
