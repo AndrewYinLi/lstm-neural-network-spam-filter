@@ -11,8 +11,6 @@ import glob
 import copy
 import random
 import sys
-import os
-import time
 from keras.preprocessing.text import Tokenizer
 from keras.models import Sequential
 from keras.layers import Dense
@@ -21,11 +19,9 @@ from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 from keras.models import model_from_yaml
 
-#random.seed(42) #set the same random seed to reproducing results
+from keras.datasets import imdb
 
-def shffl1(x):
-    state = random.getstate()
-    random.shuffle(x)
+random.seed(42) #set the same random seed to reproducing results
 
 def shffl(x,y):
     assert len(x) == len(y)
@@ -67,14 +63,10 @@ def makeSets(tokenizer, S, H):
 
     S_len = len(S_tokenized)
     H_len = len(H_tokenized)
-    print (str(S_len)+','+str(H_len))
     S_train_len = int(S_len*3/4)
     H_train_len = int(H_len*3/4)
     S_test_len = S_len - S_train_len
     H_test_len = H_len - H_train_len
-
-    shffl1(S_tokenized)
-    shffl1(H_tokenized)
     
     X_train = copy.deepcopy(S_tokenized[0:S_train_len]) + \
               copy.deepcopy(H_tokenized[0:H_train_len])
@@ -83,7 +75,7 @@ def makeSets(tokenizer, S, H):
              copy.deepcopy(H_tokenized[H_train_len:])
     Y_test = ([0]*S_test_len)+([1]*H_test_len)
 
-    #shffl(X_train, Y_train)
+    shffl(X_train, Y_train)
     #shffl(X_test, Y_test)
     
     return (X_train, Y_train), (X_test, Y_test)
@@ -95,19 +87,6 @@ def save(model):
     model.save_weights("model.h5")
     print("Saved the model to model.yaml and model.h5!")
 
-def save2(model, ind):
-    originalDir = os.getcwd()
-    os.chdir(originalDir+'/saved')
-
-    model_yaml = model.to_yaml()
-    with open('model'+str(ind)+'.yaml', "w") as yaml_file:
-        yaml_file.write(model_yaml)
-    model.save_weights('model'+str(ind)+'.h5')
-    print('Saved the model to model'+str(ind)+'.yaml and model'+str(ind)+'.h5!')
-    
-    #originalDir = os.getcwd()
-    os.chdir(originalDir)
-
 def load():
     yaml_file = open("model.yaml", "r")
     loaded_model_yaml = yaml_file.read()
@@ -117,29 +96,6 @@ def load():
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     print("Loaded model from model.yaml and model.h5!")
     return model
-
-def runForever(model, tokenizer, S, H):
-    index = 3
-    vocab_length = len(tokenizer.word_index)+1
-    max_email_length = 1500
-    while(True):
-        (X_train, Y_train), (X_test, Y_test) = makeSets(tokenizer, S, H)
-        X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)
-        X_test = sequence.pad_sequences(X_test, maxlen=max_email_length)
-        timestart = time.time()
-        model.fit(X_train, Y_train, epochs=3, batch_size=32)
-        timeend = time.time()
-        totaltime = timeend - timestart
-        print("Total time for "+str(index)+" epochs is "+str(totaltime))
-
-        #Test the thing and show results!
-        scores = model.evaluate(X_test, Y_test)
-        print("Accuracy: %.2f%%" % (scores[1]*100))
-
-        #Save the model!
-        save2(model, index)
-        index = index+3
-        
 
 def main():
     #load up the tokenizer and the non-tokenized files
@@ -151,11 +107,15 @@ def main():
         H = pickle.load(handle)
         
     #Set some parameters
-    
-    
-    
-    
+    vocab_length = len(tokenizer.word_index)+1
+    max_email_length = 1500
+
     #make the input
+    (X_train, Y_train), (X_test, Y_test) = makeSets(tokenizer, S, H)
+    X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)
+    X_test = sequence.pad_sequences(X_test, maxlen=max_email_length)
+
+    print(vocab_length)
 
     #make the model
     if (sys.argv[1] == '1'):
@@ -163,24 +123,18 @@ def main():
     else:
         model = makeModel(vocab_length, max_email_length)
 
-    seed = int(sys.argv[1])
-    random.seed(seed)
-    
-    print(model.summary())
-    runForever(model, tokenizer, S, H)
-    
+    assert len(X_test) == len(Y_test)
 
     #DO THE THING!!!!
-    
-
-    #model.fit(X_train, Y_train, epochs=3, batch_size=32)
+    print(model.summary())
+    model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
     #Test the thing and show results!
-    #scores = model.evaluate(X_test, Y_test)
-    #print("Accuracy: %.2f%%" % (scores[1]*100))
+    scores = model.evaluate(X_test, Y_test)
+    print("Accuracy: %.2f%%" % (scores[1]*100))
 
     #Save the model!
-    #save(model)
+    save(model)
 
 main()
     
