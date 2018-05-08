@@ -70,12 +70,11 @@ def getTokenizer():
 def main():
 	
 	hams = sys.argv[1]
-	hams2 = sys.argv[2]
-	spams = sys.argv[3]
-	#tokenize()
+	spams = sys.argv[2
+	tokenize()
 	
 	spams = [spams]
-	hams3 = [hams, hams2]
+	hams3 = [hams]
 	getFiles(spams, 'S')
 	getFiles(hams3, 'H')
 	#(X_train, y_train), (X_test, y_test) = imdb.load_data()
