@@ -20,9 +20,7 @@ from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 from keras.models import model_from_yaml
 
-from keras.datasets import imdb
-
-random.seed(42) #set the same random seed to reproducing results
+#random.seed(42) #set the same random seed to reproducing results
 
 def shffl1(x):
     state = random.getstate()
@@ -127,8 +125,11 @@ def runForever(model, tokenizer, S, H):
         (X_train, Y_train), (X_test, Y_test) = makeSets(tokenizer, S, H)
         X_train = sequence.pad_sequences(X_train, maxlen=max_email_length)
         X_test = sequence.pad_sequences(X_test, maxlen=max_email_length)
-        
+        timestart = time.time()
         model.fit(X_train, Y_train, epochs=3, batch_size=32)
+        timeend = time.time()
+        totaltime = timeend - timestart
+        print("Total time for "+str(index)+" epochs is "+str(totaltime))
 
         #Test the thing and show results!
         scores = model.evaluate(X_test, Y_test)
@@ -154,15 +155,16 @@ def main():
     
     
     #make the input
-    
-
-    print(vocab_length)
 
     #make the model
     if (sys.argv[1] == '1'):
         model = load()
     else:
         model = makeModel(vocab_length, max_email_length)
+
+    seed = int(sys.argv[1])
+    random.seed(seed)
+    
     print(model.summary())
     runForever(model, tokenizer, S, H)
     
@@ -177,7 +179,7 @@ def main():
     #print("Accuracy: %.2f%%" % (scores[1]*100))
 
     #Save the model!
-    save(model)
+    #save(model)
 
 main()
     
