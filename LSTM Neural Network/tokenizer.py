@@ -1,21 +1,27 @@
 import glob
 import fileinput
+import os
+import sys
 from keras.preprocessing.text import Tokenizer
 from keras.datasets import imdb
 import pickle
 
-def getFiles():
+def getFiles(inp, val):
+	
+	originalDir = os.getcwd()
+	os.chdir(originalDir+'/stemmed')
 	tokenFiles = [] # List of files to parse
 	realFileNames = []
 	openFiles = []
-	for fileName in glob.glob('./original/stemmed/H_*'): # glob textfiles
+	for fileName in glob.glob(inp+"*"): # glob textfiles
 		tokenFiles.append(fileName) # Add to list
 		realFileNames.append(fileName[8:]) # Add real name to list
-	for i in range(500):
-		file = open(tokenFiles[i])
+	for i in tokenFiles:
+		file = open(i)
 		openFiles.append(file.read())
 		file.close()
-	with open('H_files.pickle', 'wb') as handle:
+	os.chdir(originalDir)
+	with open(val+'_files.pickle', 'wb') as handle:
 		pickle.dump(openFiles, handle, protocol=pickle.HIGHEST_PROTOCOL)
 	return openFiles
 
@@ -25,7 +31,7 @@ def tokenize():
 	realFileNames = []
 	openFiles = []
 	counter = 0
-	for fileName in glob.glob('./original/stemmed/*'): # glob textfiles
+	for fileName in glob.glob('./stemmed/*'): # glob textfiles
 		tokenFiles.append(fileName) # Add to list
 		realFileNames.append(fileName[8:]) # Add real name to list
     
@@ -36,7 +42,7 @@ def tokenize():
 		file = open(fileName)
 		openFiles.append(file.read())
 		file.close()
-	print(openFiles[5])
+	#print(openFiles[5])
 	tokenizer.fit_on_texts(openFiles)
 	with open('tokenizer.pickle', 'wb') as handle:
 		pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -59,8 +65,13 @@ def getTokenizer():
 	#print(x)
 
 def main():
-	#tokenize()
-	getFiles()
+	
+	hams = sys.argv[1]
+	spams = sys.argv[2]
+	tokenize()
+	
+	getFiles(spams, 'S')
+	getFiles(hams, 'H')
 	#(X_train, y_train), (X_test, y_test) = imdb.load_data()
 	#print(X_train)
 
