@@ -127,7 +127,7 @@ def main():
 
     #DO THE THING!!!!
     print(model.summary())
-    model.fit(X_train, Y_train, epochs=1, batch_size=32)
+    model.fit(X_train, Y_train, epochs=3, batch_size=32)
 
     #Test the thing and show results!
     scores = model.evaluate(X_test, Y_test)
