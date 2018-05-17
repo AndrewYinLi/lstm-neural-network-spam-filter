@@ -18,8 +18,8 @@ from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 from keras.models import model_from_yaml
-
-from keras.datasets import imdb
+from sklearn import metrics
+from sklearn.metrics import confusion_matrix
 
 random.seed(42) #set the same random seed to reproducing results
 
@@ -127,11 +127,16 @@ def main():
 
     #DO THE THING!!!!
     print(model.summary())
-    model.fit(X_train, Y_train, epochs=3, batch_size=32)
+    model.fit(X_train, Y_train, epochs=1, batch_size=32)
 
     #Test the thing and show results!
     scores = model.evaluate(X_test, Y_test)
     print("Accuracy: %.2f%%" % (scores[1]*100))
+    #print(scores)
+    predictions = model.predict_classes(X_test, 32, 1)
+    #print(predictions)
+    cf = metrics.confusion_matrix(Y_test, predictions)
+    print(cf)
 
     #Save the model!
     save(model)
