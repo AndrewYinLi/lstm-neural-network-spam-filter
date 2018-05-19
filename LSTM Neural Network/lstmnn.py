@@ -105,6 +105,8 @@ def main():
         S = pickle.load(handle)
     with open('H_files.pickle', 'rb') as handle:
         H = pickle.load(handle)
+
+    random.seed(int(sys.argv[2]))
         
     #Set some parameters
     vocab_length = len(tokenizer.word_index)+1
