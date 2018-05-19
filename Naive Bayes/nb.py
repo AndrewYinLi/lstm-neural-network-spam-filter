@@ -14,6 +14,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import confusion_matrix 
 from tqdm import tqdm
 
+# For this function, I consulted notes I took as well as Adam Eck's slides from "CS374: Machine Learning"
 def splitSets(targetDirectory, trainingPercentage, seed):
 	
 	originalDirectory = os.getcwd() # Store current directory
@@ -44,6 +45,7 @@ def splitSets(targetDirectory, trainingPercentage, seed):
 	return len(train), len(test)
 
 def getVocabulary(targetFile):
+	
 	textFile = open(targetFile, 'r', encoding="utf8", errors='ignore')
 	vocabulary = []
 	for line in textFile:
@@ -51,7 +53,10 @@ def getVocabulary(targetFile):
 	textFile.close()
 	return vocabulary
 
-
+# For this method, I consulted the following:
+# 1. https://radimrehurek.com/data_science_python/
+# 2. https://www.kdnuggets.com/2017/03/email-spam-filtering-an-implementation-with-python-and-scikit-learn.html
+# 3. http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html
 def getWordCounterVectorMatrix(targetDirectory, keyword, numEmails, vocabulary):
 	
 	originalDirectory = os.getcwd() # Store current directory
@@ -75,8 +80,6 @@ def getWordCounterVectorMatrix(targetDirectory, keyword, numEmails, vocabulary):
 			emailIndex += 1
 	os.chdir(originalDirectory) # Go back to original directory
 	return WCVMatrix, labels
-
-
 
 def main():
 	timeStart = time.time() # Initial time
