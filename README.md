@@ -5,6 +5,8 @@
 * **Andrew Yin Li**
 * **Joshua Rappaport**
 
+## Getting Started
+
 Contains 3 directories:
 
 1. Preprocessor contains preprocessor.py, used to preprocess and stem the emails.
@@ -12,8 +14,6 @@ Contains 3 directories:
 2. Naive Bayes contains nb.py, used to run Multinomial Naive Bayes
 
 3. LSTM Neural Network contains tokenizer.py, used to tokenize stemmed emails and lstmnn.py, used to run the LSTM Neural Network.
-
-## Getting Started
 
 The spam and ham email corpus can be downloaded here: https://spamassassin.apache.org/old/publiccorpus/
 
